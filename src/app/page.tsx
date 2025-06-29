@@ -1,12 +1,15 @@
 "use client"
 
-import { createProject, getAllProjects } from "@/api/project/action";
+import { createProject, deleteProject, editProjectName, getAllProjects } from "@/api/project/action";
 import { logout } from "@/api/wielloUser/action";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { DialogTitle } from "@radix-ui/react-dialog";
 import { getCookie } from "cookies-next";
 import { Pencil, Trash } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -14,6 +17,7 @@ import { toast } from "sonner";
 export default function Home() {
   const router = useRouter();
   const [createProjectState, createProjectAction, createProjectPending] = useActionState(createProject, {});
+  const [editProjectNameState, editProjectNameAction, editProjectNamePending] = useActionState(editProjectName, {});
   const [projects, setProjects] = useState<Array<SimpleProject>>();
 
   useEffect(() => {
@@ -36,9 +40,34 @@ export default function Home() {
       }
     } else if (createProjectState.message) {
       toast.success(createProjectState.message);
-      window.location.reload();
+      const token = getCookie("token");
+      if (!token) {
+        router.push("/login");
+      } else {
+        getData(token.toString());
+      }
     }
   }, [createProjectState])
+
+  useEffect(() => {
+    if (editProjectNameState.error) {
+      if (editProjectNameState.error === "TOKEN_ERROR") {
+        logout();
+      } else {
+        toast.error(editProjectNameState.error);
+      }
+    } else if (editProjectNameState.message) {
+      toast.success(editProjectNameState.message);
+      const token = getCookie("token");
+      if (!token) {
+        router.push("/login");
+      } else {
+        getData(token.toString());
+      }
+    }
+  }, [editProjectNameState]);
+
+
 
   const getData = async (token: string) => {
     const response = await getAllProjects(token);
@@ -66,10 +95,72 @@ export default function Home() {
               <CardHeader className="bg-muted h-10 z-0 rounded-t-[inherit]">
               </CardHeader>
               <CardContent className="flex justify-between items-center gap-4">
-                <CardDescription className="break-words truncate flex-auto">{project.name}</CardDescription>
+                <Link href={`/project/${project.id}`}><CardDescription className="break-words truncate flex-auto underline">{project.name}</CardDescription></Link>
                 <div className="flex gap-2">
-                  <Pencil className="cursor-pointer" />
-                  <Trash className="cursor-pointer" />
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Pencil className="cursor-pointer" />
+                    </DialogTrigger>
+                    <DialogContent aria-describedby={undefined}>
+                      <DialogHeader>
+                        <DialogTitle>Edit the name of the project</DialogTitle>
+                      </DialogHeader>
+                      <form action={editProjectNameAction}>
+                        <DialogFooter>
+                          <Input maxLength={50} required name="name" className="order-1 sm:order-none" />
+                          <Input readOnly type="hidden" name="id" value={project.id} required />
+                          <DialogClose asChild>
+                            <Button disabled={editProjectNamePending} type="submit">
+                              Edit
+                            </Button>
+                          </DialogClose>
+                          <DialogClose asChild>
+                            <Button type="button" variant={"outline"}>
+                              Cancel
+                            </Button>
+                          </DialogClose>
+                        </DialogFooter>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Trash className="cursor-pointer" />
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Are you sure?</DialogTitle>
+                        <DialogDescription>
+                          This project will be deleted. This action cannot be undone!
+                        </DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter>
+                        <DialogClose asChild>
+                          <Button onClick={async () => {
+                            const response = await deleteProject(project.id);
+                            if (response.error) {
+                              if (response.error === "TOKEN_ERROR") {
+                                logout();
+                              } else {
+                                toast.error(response.error);
+                              }
+                            } else {
+                              toast.success(response.message);
+                              const token = getCookie("token");
+                              if (!token) {
+                                router.push("/login");
+                              } else {
+                                getData(token.toString());
+                              }
+                            }
+                          }} variant="destructive">Delete</Button>
+                        </DialogClose>
+                        <DialogClose asChild>
+                          <Button variant="outline">Cancel</Button>
+                        </DialogClose>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               </CardContent>
             </Card>

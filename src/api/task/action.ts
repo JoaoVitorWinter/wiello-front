@@ -3,10 +3,9 @@
 import { cookies } from "next/headers";
 import { customAxios } from "../axios"
 
-
-export const getAllProjects = async (token: string) => {
+export const getTask = async (token: string, taskID: string) => {
     try {
-        const response = await customAxios.get("/project", {
+        const response = await customAxios.get(`/task/${taskID}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -14,7 +13,7 @@ export const getAllProjects = async (token: string) => {
         const cookieStore = await cookies();
         cookieStore.set("token", response.headers.revalidatedtoken);
         return {
-            projects: response.data as Array<SimpleProject>
+            task: response.data as Task
         }
     } catch (error: any) {
         if (error.response.status === 401) {
@@ -23,36 +22,12 @@ export const getAllProjects = async (token: string) => {
             }
         }
         return {
-            error: "Error trying to get your projects. Try again later..."
+            error: "Error trying to get your task. Try again later..."
         }
     }
 }
 
-export const getProject = async (token: string, projectID: string) => {
-    try {
-        const response = await customAxios.get(`/project/${projectID}`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-        const cookieStore = await cookies();
-        cookieStore.set("token", response.headers.revalidatedtoken);
-        return {
-            project: response.data as Project
-        }
-    } catch (error: any) {
-        if (error.response.status === 401) {
-            return {
-                error: "TOKEN_ERROR"
-            }
-        }
-        return {
-            error: "Error trying to get your project. Try again later..."
-        }
-    }
-}
-
-export const createProject = async (previousState: any, formData: FormData): Promise<any> => {
+export const createTask = async (previousState: any, formData: FormData): Promise<any> => {
     const rawFormData = Object.fromEntries(formData);
     try {
         const cookieStore = await cookies();
@@ -62,8 +37,10 @@ export const createProject = async (previousState: any, formData: FormData): Pro
                 error: "TOKEN_ERROR"
             }
         }
-        const response = await customAxios.post("/project", {
-            name: rawFormData.name
+        const response = await customAxios.post(`/task/${rawFormData.projectColumnID}`, {
+            title: rawFormData.title,
+            description: rawFormData.description,
+            deadline: rawFormData.deadline
         }, {
             headers: {
                 Authorization: `Bearer ${token.value}`
@@ -71,7 +48,7 @@ export const createProject = async (previousState: any, formData: FormData): Pro
         });
         cookieStore.set("token", response.headers.revalidatedtoken);
         return {
-            message: "Project successfully created!"
+            message: "Task successfully created!"
         }
     } catch (error: any) {
         if (error.response.status === 401) {
@@ -80,12 +57,12 @@ export const createProject = async (previousState: any, formData: FormData): Pro
             }
         }
         return {
-            error: error.response.data ? error.response.data : "Error trying to create the project. Try again later..."
+            error: error.response.data ? error.response.data : "Error trying to create the task. Try again later..."
         }
     }
 }
 
-export const deleteProject = async (id: string) => {
+export const deleteTask = async (id: string) => {
     try {
         const cookieStore = await cookies();
         const token = cookieStore.get("token");
@@ -94,14 +71,14 @@ export const deleteProject = async (id: string) => {
                 error: "TOKEN_ERROR"
             }
         }
-        const response = await customAxios.delete(`/project/${id}`, {
+        const response = await customAxios.delete(`/task/${id}`, {
             headers: {
                 Authorization: `Bearer ${token.value}`
             }
         })
         cookieStore.set("token", response.headers.revalidatedtoken);
         return {
-            message: "Project deleted..."
+            message: "Task deleted..."
         }
     } catch (error: any) {
         if (error.response.status === 401) {
@@ -110,12 +87,12 @@ export const deleteProject = async (id: string) => {
             }
         }
         return {
-            error: error.response.data ? error.response.data : "Error trying to delete the project. Try again later..."
+            error: error.response.data ? error.response.data : "Error trying to delete the task. Try again later..."
         }
     }
 }
 
-export const editProjectName = async (previousState: any, formData: FormData): Promise<any> => {
+export const editTask = async (previousState: any, formData: FormData): Promise<any> => {
     const rawFormData = Object.fromEntries(formData);
     try {
         const cookieStore = await cookies();
@@ -125,8 +102,10 @@ export const editProjectName = async (previousState: any, formData: FormData): P
                 error: "TOKEN_ERROR"
             }
         }
-        const response = await customAxios.patch(`/project/${rawFormData.id}`, {
-            name: rawFormData.name
+        const response = await customAxios.put(`/task/${rawFormData.taskID}`, {
+            title: rawFormData.title,
+            description: rawFormData.description,
+            deadline: rawFormData.deadline
         }, {
             headers: {
                 Authorization: `Bearer ${token.value}`
@@ -134,7 +113,7 @@ export const editProjectName = async (previousState: any, formData: FormData): P
         })
         cookieStore.set("token", response.headers.revalidatedtoken);
         return {
-            message: `Name of the project was edited to ${rawFormData.name}`
+            message: `Task edited...`
         }
     } catch (error: any) {
         if (error.response.status === 401) {
@@ -143,7 +122,37 @@ export const editProjectName = async (previousState: any, formData: FormData): P
             }
         }
         return {
-            error: error.response.data ? error.response.data : "Error trying to edit the project's name. Try again later..."
+            error: error.response.data ? error.response.data : "Error trying to edit the task. Try again later..."
+        }
+    }
+}
+
+export const editTaskColumn = async (taskID: string, projectColumnID: string): Promise<any> => {
+    try {
+        const cookieStore = await cookies();
+        const token = cookieStore.get("token");
+        if (!token) {
+            return {
+                error: "TOKEN_ERROR"
+            }
+        }
+        const response = await customAxios.patch(`/task/${taskID}/${projectColumnID}`, {}, {
+            headers: {
+                Authorization: `Bearer ${token.value}`
+            }
+        })
+        cookieStore.set("token", response.headers.revalidatedtoken);
+        return {
+            message: `Task edited...`
+        }
+    } catch (error: any) {
+        if (error.response.status === 401) {
+            return {
+                error: "TOKEN_ERROR"
+            }
+        }
+        return {
+            error: error.response.data ? error.response.data : "Error trying to edit the task. Try again later..."
         }
     }
 }
