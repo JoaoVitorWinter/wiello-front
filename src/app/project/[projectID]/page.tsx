@@ -217,7 +217,7 @@ export default function Project({ params }: { params: { projectID: string } }) {
                                                 <DialogTitle>Create task in '{column.name}'</DialogTitle>
                                             </DialogHeader>
                                             <form action={createTaskAction} className="flex flex-col gap-4">
-                                                <Input readOnly hidden value={column.id} name="projectColumnID" />
+                                                <Input readOnly hidden value={column.id} name="projectColumnID" required />
                                                 <div className="grid gap-2">
                                                     <Label htmlFor="title">Name</Label>
                                                     <Input id="title" name="title" maxLength={100} required />
@@ -336,7 +336,7 @@ export default function Project({ params }: { params: { projectID: string } }) {
                                                         <DialogTitle className="max-w-4/6">Your task</DialogTitle>
                                                     </DialogHeader>
                                                     <form action={editTaskAction} className="flex flex-col gap-4">
-                                                        <Input readOnly hidden value={task.id} name="taskID" />
+                                                        <Input readOnly hidden value={task.id} name="taskID" required />
                                                         <div className="grid gap-2">
                                                             <Label htmlFor="title">Name</Label>
                                                             <Input id="title" name="title" maxLength={100} required defaultValue={selectedTask.title} />
@@ -364,8 +364,8 @@ export default function Project({ params }: { params: { projectID: string } }) {
                         <Card className="min-w-72 max-w-72 h-fit">
                             <CardContent>
                                 <form action={createProjectColumnAction} className="flex flex-col gap-2">
-                                    <Input hidden readOnly value={projectID} name="projectID" />
-                                    <Input maxLength={30} placeholder="Name of the new list" name="name" />
+                                    <Input hidden readOnly value={projectID} name="projectID" required />
+                                    <Input maxLength={30} placeholder="Name of the new list" name="name" required />
                                     <Button className="w-full" type="submit" disabled={createProjectColumnPending}>Create list</Button>
                                 </form>
                             </CardContent>
