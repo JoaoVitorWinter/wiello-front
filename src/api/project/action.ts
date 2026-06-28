@@ -125,7 +125,7 @@ export const editProjectName = async (previousState: any, formData: FormData): P
                 error: "TOKEN_ERROR"
             }
         }
-        const response = await customAxios.patch(`/project/${rawFormData.id}`, {
+        const response = await customAxios.put(`/project/${rawFormData.id}`, {
             name: rawFormData.name
         }, {
             headers: {
