@@ -17,6 +17,27 @@ test('Deve criar um novo projeto', async ({ page }) => {
     await expect(page.getByText(projectName)).toBeVisible();
 });
 
+test('Deve listar corretamente os projetos na página inicial', async ({ page }) => {
+  await login(page);
+
+  await page.goto('http://localhost:3000');
+
+  const projectName = `Projeto Teste ${Date.now()}`;
+
+  await page.getByPlaceholder('Name of the new project').fill(projectName);
+  await page.getByRole('button', { name: /create project/i }).click();
+
+  await expect(page.getByText(projectName)).toBeVisible();
+
+  const projects = page.locator('text=/Projeto/');
+
+  const count = await projects.count();
+  expect(count).toBeGreaterThan(0);
+
+  const allTexts = await projects.allTextContents();
+  expect(allTexts).toContain(projectName);
+});
+
 test('Deve editar o nome de um projeto', async ({ page }) => {
     await login(page);
 
@@ -62,23 +83,27 @@ test('Deve entrar em um projeto ao clicar nele', async ({ page }) => {
 });
 
 test('Deve criar e deletar um projeto', async ({ page }) => {
-    await login(page);
+  await login(page);
 
-    await page.goto('http://localhost:3000');
+  await page.goto('http://localhost:3000');
 
-    const projectName = 'Projeto Teste';
+  const projectName = 'Projeto Teste Deletar';
 
-    const project = page.getByText(projectName);
-    await expect(project).toBeVisible();
+  await page.getByPlaceholder('Name of the new project').fill(projectName);
+  await page.getByRole('button', { name: /create project/i }).click();
 
-    const card = project.locator('xpath=ancestor::div[contains(@class, "w-72")]');
+  const project = page.getByText(projectName);
+  await expect(project).toBeVisible();
 
-    await card.locator('svg').nth(1).click();
+  const card = project.locator('xpath=ancestor::div[contains(@class, "w-72")]');
+  await expect(card).toBeVisible();
 
-    const dialog = page.getByRole('dialog');
-    await expect(dialog).toBeVisible();
+  await card.locator('svg').nth(1).click();
 
-    await dialog.getByRole('button', { name: /delete/i }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
 
-    await expect(page.getByText(projectName)).not.toBeVisible();
+  await dialog.getByRole('button', { name: /delete/i }).click();
+
+  await expect(page.getByText(projectName)).not.toBeVisible();
 });
