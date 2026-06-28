@@ -8,7 +8,7 @@ test('Deve criar um novo projeto', async ({ page }) => {
 
     await page.goto('http://localhost:3000');
 
-    const projectName = `Projeto Teste ${Date.now()}`;
+    const projectName = `Projeto Teste`;
 
     await page.getByPlaceholder('Name of the new project').fill(projectName);
 
@@ -19,7 +19,7 @@ test('Deve criar um novo projeto', async ({ page }) => {
 
 test('Deve editar o nome de um projeto', async ({ page }) => {
     await login(page);
-    
+
     await page.goto('http://localhost:3000');
 
     const originalName = `Projeto ${Date.now()}`;
@@ -43,15 +43,30 @@ test('Deve editar o nome de um projeto', async ({ page }) => {
     await expect(page.getByText(updatedName)).toBeVisible();
 });
 
-test('Deve criar e deletar um projeto', async ({ page }) => {
+test('Deve entrar em um projeto ao clicar nele', async ({ page }) => {
     await login(page);
-    
+
     await page.goto('http://localhost:3000');
 
-    const projectName = `Projeto ${Date.now()}`;
+    const projectName = `Projeto Teste`;
 
     await page.getByPlaceholder('Name of the new project').fill(projectName);
     await page.getByRole('button', { name: /create project/i }).click();
+
+    const project = page.getByText(projectName);
+    await expect(project).toBeVisible();
+
+    await project.click();
+
+    await expect(page.getByRole('heading', { name: projectName })).toBeVisible();
+});
+
+test('Deve criar e deletar um projeto', async ({ page }) => {
+    await login(page);
+
+    await page.goto('http://localhost:3000');
+
+    const projectName = 'Projeto Teste';
 
     const project = page.getByText(projectName);
     await expect(project).toBeVisible();
@@ -66,22 +81,4 @@ test('Deve criar e deletar um projeto', async ({ page }) => {
     await dialog.getByRole('button', { name: /delete/i }).click();
 
     await expect(page.getByText(projectName)).not.toBeVisible();
-});
-
-test('Deve entrar em um projeto ao clicar nele', async ({ page }) => {
-    await login(page);
-    
-    await page.goto('http://localhost:3000');
-
-    const projectName = `Projeto ${Date.now()}`;
-
-    await page.getByPlaceholder('Name of the new project').fill(projectName);
-    await page.getByRole('button', { name: /create project/i }).click();
-
-    const project = page.getByText(projectName);
-    await expect(project).toBeVisible();
-
-    await project.click();
-
-    await expect(page.getByRole('heading', { name: projectName })).toBeVisible();
 });
