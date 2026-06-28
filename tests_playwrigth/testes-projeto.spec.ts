@@ -1,8 +1,11 @@
 import { test, expect } from '@playwright/test';
+import { login } from './testes-login.spec';
 
 
 
 test('Deve criar um novo projeto', async ({ page }) => {
+    await login(page);
+
     await page.goto('http://localhost:3000');
 
     const projectName = `Projeto Teste ${Date.now()}`;
@@ -15,6 +18,8 @@ test('Deve criar um novo projeto', async ({ page }) => {
 });
 
 test('Deve editar o nome de um projeto', async ({ page }) => {
+    await login(page);
+    
     await page.goto('http://localhost:3000');
 
     const originalName = `Projeto ${Date.now()}`;
@@ -39,7 +44,9 @@ test('Deve editar o nome de um projeto', async ({ page }) => {
 });
 
 test('Deve criar e deletar um projeto', async ({ page }) => {
-    await page.goto('/');
+    await login(page);
+    
+    await page.goto('http://localhost:3000');
 
     const projectName = `Projeto ${Date.now()}`;
 
@@ -62,7 +69,9 @@ test('Deve criar e deletar um projeto', async ({ page }) => {
 });
 
 test('Deve entrar em um projeto ao clicar nele', async ({ page }) => {
-    await page.goto('/');
+    await login(page);
+    
+    await page.goto('http://localhost:3000');
 
     const projectName = `Projeto ${Date.now()}`;
 

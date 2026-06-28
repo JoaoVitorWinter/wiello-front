@@ -58,7 +58,7 @@ export default function Register() {
                         </div>
                     </CardContent>
                     <CardFooter className="mt-6">
-                        <Button disabled={loginPending} className="w-full" variant="default" type="submit">Login</Button>
+                        <Button id="button-submit" disabled={loginPending} className="w-full" variant="default" type="submit">Login</Button>
                     </CardFooter>
                 </form>
             </Card>
